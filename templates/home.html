@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+
+	<div class="container">
+		<h4>Home</h4>
+	</div>
+
+	<div class="container">
+		<p>Welcome to my language app!</p>
+	</div>
+
+	<div class="container">
+		<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('languages') }}'">Click to enter site</button>
+	</div>
+
+{% endblock %}

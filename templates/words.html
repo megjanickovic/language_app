@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block content %}
+
+	<div class="container">
+		<button type="button" class="btn btn-link" onclick="window.location.href='{{ url_for('language', language=language) }}'">Back</button>	
+	</div>
+
+	<div class="container">
+		<h4>Dictionary</h4>
+	</div>
+
+	<div class="container">
+		<ul>
+			{% for w in words_data %}
+			<li><a href="{{ url_for('word', language=language, word=w.id) }}">{{ w.word }}</a></li>
+			{% endfor %}
+		</ul>
+		<button type="button" class="btn btn-link" data-toggle="modal" data-target="#addWordModal">Add Word</button>
+	</div>
+
+        <div class="modal fade" id="addWordModal" tabindex="-1" role="dialog" aria-labelledby="addWordModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                                <div class="modal-header">
+                                        <h5 class="modal-title" id="addWordModalLabel">Add Word</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <div class="modal-body" id="addWordModalBody">
+                                        <form>
+						<input type="hidden" name="language_id" value="{{ language }}">
+                                                <div class="form-group">
+                                                        <input type="text" class="form-control" name="word" placeholder="Word">
+                                                </div>
+						<div class="form-group">
+                                                        <input type="text" class="form-control" name="definition" placeholder="Definition">
+                                                </div>	
+                                                <button type="button" class="btn btn-primary" id="addWordButton">Submit</button>
+                                        </form>
+                                </div>
+                        </div>  
+                </div>  
+        </div>
+
+	<script>
+                $('#addWordModal').on('hidden.bs.modal', function () {
+                        location.reload();
+                })
+
+                $(function() {
+                        $('#addWordButton').click(function() {
+                                $.ajax({
+                                        url: '/addWord',
+                                        data: $('form').serialize(),
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        success: function(response) {
+                                                document.getElementById('addWordModalBody').innerHTML = response.html;
+                                        },
+                                        error: function(error) {
+                                                console.log(error);
+                                        }
+                                });
+                        });
+                });
+        </script>
+
+{% endblock %}

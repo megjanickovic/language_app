@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+{% block content %}
+
+	<div class="container">
+		<h4>Languages</h4>
+	</div>
+
+	<div class="container">
+		<ul>
+			{% for l in languages_data %}
+			<li><a href="{{ url_for('language', language=l.id) }}">{{ l.language }}</a></li>
+			{% endfor %}
+		</ul>
+	</div>
+
+	<div class="container">
+		<button type="button" class="btn btn-link" data-toggle="modal" data-target="#addLanguageModal">Add Language</button>
+	</div>
+
+	<div class="modal fade" id="addLanguageModal" tabindex="-1" role="dialog" aria-labelledby="addLanguageModalLabel" aria-hidden="true">
+  		<div class="modal-dialog" role="document">
+    			<div class="modal-content">
+      				<div class="modal-header">
+        				<h5 class="modal-title" id="addLanguageModalLabel">Add Language</h5>
+        				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          					<span aria-hidden="true">&times;</span>
+        				</button>
+      				</div>
+      				<div class="modal-body" id="addLanguageModalBody">
+        				<form>
+  						<div class="form-group">
+    							<input type="text" class="form-control" name="language" placeholder="Language">
+  						</div>
+  						<button type="button" class="btn btn-primary" id="addLanguageButton">Submit</button>
+					</form>	
+      				</div>
+    			</div>
+  		</div>
+	</div>
+
+	<script>
+		$('#addLanguageModal').on('hidden.bs.modal', function () {
+ 			location.reload();
+		})
+
+		$(function() {
+    			$('#addLanguageButton').click(function() {
+				$.ajax({
+                                        url: '/addLanguage',
+                                        data: $('form').serialize(),
+                                        type: 'POST',
+					dataType: 'json',
+                                        success: function(response) {
+                                                document.getElementById('addLanguageModalBody').innerHTML = response.html;
+                                        },
+                                        error: function(error) {
+                                                console.log(error);
+                                        }
+                                });
+			});
+		});
+	</script>
+
+{% endblock %}

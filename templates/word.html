@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block content %}
+
+	<div class="container">
+		<button type="button" class="btn btn-link" onclick="window.location.href='{{ url_for('words', language=language) }}'">Back</button>
+	</div>
+
+	<div class="container">
+		<h4>{{ word_data.word }}</h4>
+	</div>
+
+	<div class="container">
+		<h5>Definition</h5>
+		<ul>
+			<li>{{ word_data.definition }}</li>
+		</ul>
+		<button type="button" class="btn btn-link" data-toggle="modal" data-target="#editDefinitionModal">Edit Definition</button>
+	</div>
+
+	<div class="container">
+		<h5>Tagged as</h5>
+		<ul>
+			{% for t in tags %}
+			<li>{{ t.tag }}</li>
+			{% endfor %}
+		</ul>
+		<button type="button" class="btn btn-link" data-toggle="modal" data-target="#editTagsModal">Edit Tags</button>
+	</div>
+
+        <div class="modal fade" id="editDefinitionModal" tabindex="-1" role="dialog" aria-labelledby="editDefinitionModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                                <div class="modal-header">
+                                        <h5 class="modal-title" id="editDefinitionModalLabel">Edit Definition</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <div class="modal-body" id="editDefinitionModalBody">
+                                        <form>
+						<input type="hidden" name="id" value="{{ word }}">
+                                                <div class="form-group">
+                                                        <input type="text" class="form-control" name="definition" value="{{ word_data.definition }}">
+                                                </div>
+                                                <button type="button" class="btn btn-primary" id="editDefinitionButton">Submit</button>
+                                        </form>
+                                </div>
+                        </div>
+                </div>
+        </div>
+
+        <div class="modal fade" id="editTagsModal" tabindex="-1" role="dialog" aria-labelledby="editTagsModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                                <div class="modal-header">
+                                        <h5 class="modal-title" id="editTagsModalLabel">Edit Tags</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <div class="modal-body" id="editTagsModalBody">
+					<div class="container">
+						{% for t in tags %}
+                        			<div class="row">
+							<div class="col-sm">
+								{{ t.tag }}
+							</div>
+							<div class="col-sm">
+								<button type="button" class="btn btn-danger">Remove Tag</button>
+							</div>
+						</div>
+						{% endfor %}
+						<br>
+						<div class="row">
+							<div class="col-sm">
+								<input type="text" class="form-control" name="tag" placeholder="New Tag">
+							</div>
+							<div class="col-sm">
+								<button type="button" class="btn btn-primary" id="addTagButton">Add Tag</button>
+							</div>
+						</div>	
+					</div>		
+                                </div>
+                        </div>
+                </div>
+        </div>
+
+	<script>
+                $('#editDefinitionModal').on('hidden.bs.modal', function () {
+                        location.reload();
+                })
+
+                $(function() {
+                        $('#editDefinitionButton').click(function() {
+                                $.ajax({
+                                        url: '/editDefinition',
+                                        data: $('form').serialize(),
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        success: function(response) {
+                                                document.getElementById('editDefinitionModalBody').innerHTML = response.html;
+                                        },
+                                        error: function(error) {
+                                                console.log(error);
+                                        }
+                                });
+                        });
+                });
+        </script>
+
+{% endblock %}
