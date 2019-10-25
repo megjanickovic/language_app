@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+{% block content %}
+
+	<div class="container">
+		<h4>Manage Tags</h4>
+	</div>
+
+	<div class="container">
+		<table>
+			{% for t in tags_data %}
+			<tr>
+				<td>
+					{{ t.tag }}
+				</td>
+				<td>
+					<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteTagModal" data-id="{{ t.tag_id }}" data-tag="{{ t.tag }}">Delete</button>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		<button type="button" class="btn btn-link" data-toggle="modal" data-target="#addTagModal">Add Tag</button>
+	</div>
+
+	<!-- MODALS -->
+
+	<div class="modal fade" id="deleteTagModal" tabindex="-1" role="dialog" aria-labelledby="deleteTagModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                                <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteTagModalLabel">Delete Tag</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <div class="modal-body" id="deleteTagModalBody">
+					<form id="deleteTagForm">
+                                                <input type="hidden" name="tag_id" id="deleteTagHiddenId">
+                                                <p>Are you sure you want to delete the tag <strong id="deleteTagName"></strong>? Words with this tag will not be deleted.</p>
+						<button type="button" class="btn btn-primary" id="deleteTagButton">Submit</button>
+                                        </form>
+				</div>
+                        </div> 
+                </div> 
+        </div>
+
+        <div class="modal fade" id="addTagModal" tabindex="-1" role="dialog" aria-labelledby="addTagModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                                <div class="modal-header">
+                                        <h5 class="modal-title" id="addTagModalLabel">Add Tag</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <div class="modal-body" id="addTagModalBody">
+                                        <form id="addTagForm">
+						<input type="hidden" name="language_id" value="{{ language_id }}">
+                                                <div class="form-group">
+                                                        <input type="text" class="form-control" name="tag" placeholder="Tag">
+                                                </div>
+                                                <button type="button" class="btn btn-primary" id="addTagButton">Submit</button>
+                                        </form>
+                                </div>
+                        </div>  
+                </div>  
+        </div>
+
+	<!-- END MODALS -->
+
+	<script>
+		$(function() {
+			/* When a modal is closed, reload the page to show any new or edited content */
+                	
+			$('#deleteTagModal').on('hidden.bs.modal', function () {
+                        	location.reload();
+                	})
+
+			$('#addTagModal').on('hidden.bs.modal', function () {
+                                location.reload();
+                        })
+
+			/* Pass data to the modals if needed */
+
+			$('#deleteTagModal').on('show.bs.modal', function (event) {
+                                var button = $(event.relatedTarget);
+                                var id = button.data('id');
+                                var tag = button.data('tag');
+                                $('#deleteTagHiddenId').val(id);
+                                $('#deleteTagName').text(tag);
+                        })
+
+			/* Submit changes */
+                  	
+                        $('#deleteTagButton').click(function() {
+                                $.ajax({
+                                        url: '/deleteTag',
+                                        data: $('#deleteTagForm').serialize(),
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        success: function(response) {
+                                                document.getElementById('deleteTagModalBody').innerHTML = response.html;
+                                        },
+                                        error: function(error) {
+                                                console.log(error);
+                                        }
+                                });
+                        });
+
+			$('#addTagButton').click(function() {
+                                $.ajax({
+                                        url: '/addTag',
+                                        data: $('#addTagForm').serialize(),
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        success: function(response) {
+                                                document.getElementById('addTagModalBody').innerHTML = response.html;
+                                        },
+                                        error: function(error) {
+                                                console.log(error);
+                                        }
+                                });
+                        });
+                });
+        </script>
+
+{% endblock %}

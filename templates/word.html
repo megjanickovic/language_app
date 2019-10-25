@@ -2,54 +2,48 @@
 {% block content %}
 
 	<div class="container">
-		<button type="button" class="btn btn-link" onclick="window.location.href='{{ url_for('words', language=language) }}'">Back</button>
+		<h2>{{ word_data.word }}</h2>
+		{% if word_data.pronunciation %}<h6>{{ word_data.pronunciation }}</h6>{% endif %}
+		<h6>{{ word_data.definition }}</h6>
 	</div>
-
+	<br>
 	<div class="container">
-		<h4>{{ word_data.word }}</h4>
+		<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('words', language_id=language_id) }}'">Return to Dictionary</button>
+		<button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#editWordModal">Edit Word</button>
+		<button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#editTagsModal">Edit Tags</button>
 	</div>
 
-	<div class="container">
-		<h5>Definition</h5>
-		<ul>
-			<li>{{ word_data.definition }}</li>
-		</ul>
-		<button type="button" class="btn btn-link" data-toggle="modal" data-target="#editDefinitionModal">Edit Definition</button>
-	</div>
+	<!-- MODALS -->
 
-	<div class="container">
-		<h5>Tagged as</h5>
-		<ul>
-			{% for t in tags %}
-			<li>{{ t.tag }}</li>
-			{% endfor %}
-		</ul>
-		<button type="button" class="btn btn-link" data-toggle="modal" data-target="#editTagsModal">Edit Tags</button>
-	</div>
-
-        <div class="modal fade" id="editDefinitionModal" tabindex="-1" role="dialog" aria-labelledby="editDefinitionModalLabel" aria-hidden="true">
+	<div class="modal fade" id="editWordModal" tabindex="-1" role="dialog" aria-labelledby="editWordModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                         <div class="modal-content">
                                 <div class="modal-header">
-                                        <h5 class="modal-title" id="editDefinitionModalLabel">Edit Definition</h5>
+                                        <h5 class="modal-title" id="editWordModalLabel">Edit Word</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                         </button>
                                 </div>
-                                <div class="modal-body" id="editDefinitionModalBody">
+                                <div class="modal-body" id="editWordModalBody">
                                         <form>
-						<input type="hidden" name="id" value="{{ word }}">
+                                                <input type="hidden" name="word_id" value="{{ word_id }}">
                                                 <div class="form-group">
-                                                        <input type="text" class="form-control" name="definition" value="{{ word_data.definition }}">
+                                                        <input type="text" class="form-control" name="word" placeholder="Word" value="{{ word_data.word }}">
                                                 </div>
-                                                <button type="button" class="btn btn-primary" id="editDefinitionButton">Submit</button>
+                                                <div class="form-group">
+                                                        <input type="text" class="form-control" name="pronunciation" placeholder="Pronunciation" {% if word_data.pronunciation %} value="{{ word_data.pronunciation }}" {% endif %}>
+                                                </div>
+                                                <div class="form-group">
+                                                        <input type="text" class="form-control" name="definition" placeholder="Definition" value="{{ word_data.definition }}">
+                                                </div>
+                                                <button type="button" class="btn btn-primary" id="editWordButton">Submit</button>
                                         </form>
                                 </div>
                         </div>
                 </div>
         </div>
-
-        <div class="modal fade" id="editTagsModal" tabindex="-1" role="dialog" aria-labelledby="editTagsModalLabel" aria-hidden="true">
+        
+	<div class="modal fade" id="editTagsModal" tabindex="-1" role="dialog" aria-labelledby="editTagsModalLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                         <div class="modal-content">
                                 <div class="modal-header">
@@ -60,45 +54,40 @@
                                 </div>
                                 <div class="modal-body" id="editTagsModalBody">
 					<div class="container">
-						{% for t in tags %}
-                        			<div class="row">
-							<div class="col-sm">
-								{{ t.tag }}
+						<form>
+							{% for t in tags %}
+							<div class="form-check">
+  								<input class="form-check-input" type="checkbox" value="{{ t.tag_id }}" name="tag-{{ t.tag_id }}">
+  								<label class="form-check-label" for="tag-{{ t.tag_id }}">{{ t.tag }}</label>
 							</div>
-							<div class="col-sm">
-								<button type="button" class="btn btn-danger">Remove Tag</button>
-							</div>
-						</div>
-						{% endfor %}
-						<br>
-						<div class="row">
-							<div class="col-sm">
-								<input type="text" class="form-control" name="tag" placeholder="New Tag">
-							</div>
-							<div class="col-sm">
-								<button type="button" class="btn btn-primary" id="addTagButton">Add Tag</button>
-							</div>
-						</div>	
+							{% endfor %}
+						</form>
 					</div>		
                                 </div>
                         </div>
                 </div>
         </div>
 
-	<script>
-                $('#editDefinitionModal').on('hidden.bs.modal', function () {
-                        location.reload();
-                })
+	<!-- END MODALS -->
 
-                $(function() {
-                        $('#editDefinitionButton').click(function() {
+	<script>
+		$(function() {
+			/* When a modal is closed, reload the page to show any new or edited content */			
+
+                	$('#editWordModal').on('hidden.bs.modal', function () {
+                        	location.reload();
+                	})
+
+			/* Submit changes */
+
+                        $('#editWordButton').click(function() {
                                 $.ajax({
-                                        url: '/editDefinition',
+                                        url: '/editWord',
                                         data: $('form').serialize(),
                                         type: 'POST',
                                         dataType: 'json',
                                         success: function(response) {
-                                                document.getElementById('editDefinitionModalBody').innerHTML = response.html;
+                                                document.getElementById('editWordModalBody').innerHTML = response.html;
                                         },
                                         error: function(error) {
                                                 console.log(error);

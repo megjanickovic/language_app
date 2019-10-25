@@ -6,16 +6,49 @@
 	</div>
 
 	<div class="container">
-		<ul>
-			{% for l in languages_data %}
-			<li><a href="{{ url_for('language', language=l.id) }}">{{ l.language }}</a></li>
-			{% endfor %}
-		</ul>
+                <table>
+                        {% for l in languages_data %}
+                        <tr>
+                                <td>
+                                        {{ l.language }}
+                                </td>
+                                <td>
+					<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('words', language_id=l.language_id) }}'">Dictionary</button>
+                			<button type="button" class="btn btn-outline-primary" onclick="alert('Coming soon!')">Flashcards</button>
+                			<button type="button" class="btn btn-outline-primary" onclick="alert('Coming coon!')">Notes</button>
+					<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('tags', language_id=l.language_id) }}'">Manage Tags</button>
+					<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteLanguageModal" data-id="{{ l.language_id }}" data-language="{{ l.language }}">Delete</button>
+                                </td>
+                        </tr>
+                        {% endfor %}
+                </table>
+        </div>
+	<br>
+	<div class="container">
+		<button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#addLanguageModal">Add Language</button>
 	</div>
 
-	<div class="container">
-		<button type="button" class="btn btn-link" data-toggle="modal" data-target="#addLanguageModal">Add Language</button>
-	</div>
+	<!-- MODALS -->
+
+	<div class="modal fade" id="deleteLanguageModal" tabindex="-1" role="dialog" aria-labelledby="deleteLanguageModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                                <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteLanguageModalLabel">Delete Language</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <div class="modal-body" id="deleteLanguageModalBody">
+                                        <form id="deleteLanguageForm">
+                                                <input type="hidden" name="language_id" id="deleteLanguageHiddenId">
+                                                <p>Are you sure you want to delete the language <strong id="deleteLanguageName"></strong>?</p>
+                                                <button type="button" class="btn btn-primary" id="deleteLanguageButton">Submit</button>
+                                        </form>
+                                </div>
+                        </div>
+                </div>
+        </div>
 
 	<div class="modal fade" id="addLanguageModal" tabindex="-1" role="dialog" aria-labelledby="addLanguageModalLabel" aria-hidden="true">
   		<div class="modal-dialog" role="document">
@@ -38,12 +71,47 @@
   		</div>
 	</div>
 
-	<script>
-		$('#addLanguageModal').on('hidden.bs.modal', function () {
- 			location.reload();
-		})
+	<!-- END MODALS -->
 
+	<script>
 		$(function() {
+			/* When a modal is closed, reload the page to show any new or edited content */
+
+			$('#deleteLanguageModal').on('hidden.bs.modal', function () {
+                                location.reload();
+                        })
+
+			$('#addLanguageModal').on('hidden.bs.modal', function () {
+ 				location.reload();
+			})
+
+			/* Pass data to the modals if needed */
+
+			$('#deleteLanguageModal').on('show.bs.modal', function (event) {
+                                var button = $(event.relatedTarget);
+                                var language_id = button.data('language_id');
+                                var language = button.data('language');
+                                $('#deleteLanguageHiddenId').val(language_id);
+                                $('#deleteLanguageName').text(language);
+                        })
+
+			/* Submit changes */
+
+			$('#deleteLanguageButton').click(function() {
+                                $.ajax({
+                                        url: '/deleteLanguage',
+                                        data: $('#deleteLanguageForm').serialize(),
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        success: function(response) {
+                                                document.getElementById('deleteLanguageModalBody').innerHTML = response.html;
+                                        },
+                                        error: function(error) {
+                                                console.log(error);
+                                        }
+                                });
+                        });
+
     			$('#addLanguageButton').click(function() {
 				$.ajax({
                                         url: '/addLanguage',
