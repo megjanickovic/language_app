@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% block content %}
+
+	<div class="container">
+		<h4>Flashcards</h4>
+	</div>
+	<br>
+	<div class="container" id="body">
+		<div class="container flashcard-controls">
+			<div class="row">
+    				<div class="col">
+                			<button type="button" class="btn btn-outline-primary" id="button-back">Back</button>
+				</div>
+				<div class="col" id="counter"></div>
+				<div class="col">
+                			<button type="button" class="btn btn-outline-primary" id="button-next">Next</button>
+        			</div>
+			</div>
+		</div>
+		<br>
+		<div class="container">
+			<div class="container flashcard" id="flashcard-front"></div>
+			<div class="container flashcard" id="flashcard-back"></div>
+        	</div>
+		<br>
+		<div class="container">
+			<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('languages') }}'">Return to Languages</button>		
+			<button type="button" class="btn btn-outline-primary" onclick="alert('Coming coon!')">Select Tags</button>
+			<button type="button" class="btn btn-outline-primary" id="restart">Restart</button>
+		</div>
+	</div>
+	<div class="container" id="body-no-cards">
+		<p>No flashcards found!</p>
+		<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('languages') }}'">Return to Languages</button>
+		<button type="button" class="btn btn-outline-primary">Select Tags</button>
+	</div>
+		
+
+	<script>
+                $(function() {
+			var cards = {{ words_data|tojson }};
+			var numCards = cards.length;	
+			var currentCard = 0;
+
+			function handleEmptySet() {
+				if (numCards == 0) {
+					$("#body").hide();
+					$("#body-no-cards").show();
+				} else {
+					$("#body").show();
+                                        $("#body-no-cards").hide();
+				}
+			}
+
+			function setCounter() {
+				let counterText = currentCard + 1 + " of " + numCards;
+				$('#counter').html(counterText);
+			}
+
+			function setCardContent() {
+				$('#flashcard-front').html(cards[currentCard].word);
+				$('#flashcard-back').html(cards[currentCard].definition);
+			}
+
+			function showFront() {
+				$("#flashcard-back").hide();
+                                $("#flashcard-front").show();
+			}
+
+			function showBack() {
+				$("#flashcard-front").hide();
+                                $("#flashcard-back").show();
+			}
+
+			function changeCard() {
+				showFront();
+				setCounter();
+				setCardContent();
+			}
+
+			function setup() {
+				handleEmptySet();
+				changeCard();
+			}
+			setup();
+
+			$("#button-back").click(function() {
+				if (currentCard > 0) {
+                        		currentCard--;
+					changeCard();
+				}
+			}); 
+
+			$("#button-next").click(function() {
+				if (currentCard < numCards - 1) {
+                        		currentCard++;
+					changeCard();
+				}
+			});
+                        
+                        $("#flashcard-front").click(function() {
+                        	showBack();
+			});
+                        
+                        $("#flashcard-back").click(function() {
+                        	showFront();
+			});
+
+			$("#restart").click(function() {
+                                currentCard = 0;
+				changeCard();
+                        });
+		});
+        </script>
+
+{% endblock %}

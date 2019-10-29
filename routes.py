@@ -188,6 +188,17 @@ def removeWordTag():
         return json.dumps({'html':'Tag deleted.'})
     else:
         return json.dumps({'html':'An error has occurred (/removeWordTag)'})
+
+###################### FLASHCARDS ######################
+
+@app.route('/languages/<int:language_id>/flashcards')
+def flashcards(language_id):
+    query = "SELECT word_id, word, pronunciation, definition FROM words WHERE language_id=%s ORDER BY word"
+    params = language_id
+    cursor.execute(query, params)
+    words_data = cursor.fetchall()
+    return render_template('flashcards.html', language_id=language_id, words_data=words_data)
+    
 ###################### END ROUTES ######################
 
 if __name__ == "__main__":

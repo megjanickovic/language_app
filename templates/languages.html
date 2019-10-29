@@ -14,8 +14,8 @@
                                 </td>
                                 <td>
 					<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('words', language_id=l.language_id) }}'">Dictionary</button>
-                			<button type="button" class="btn btn-outline-primary" onclick="alert('Coming soon!')">Flashcards</button>
-                			<button type="button" class="btn btn-outline-primary" onclick="alert('Coming coon!')">Notes</button>
+                			<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('flashcards', language_id=l.language_id) }}'">Flashcards</button>
+					<button type="button" class="btn btn-outline-primary" onclick="alert('Coming coon!')">Notes</button>
 					<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('tags', language_id=l.language_id) }}'">Manage Tags</button>
 					<button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteLanguageModal" data-id="{{ l.language_id }}" data-language="{{ l.language }}">Delete</button>
                                 </td>
