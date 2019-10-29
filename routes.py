@@ -79,9 +79,9 @@ def word(language_id, word_id):
     params = language_id, word_id
     cursor.execute(query, params)
     word_data = cursor.fetchone()
-    # need to get tags as well
-    query = "SELECT tag_id, tag FROM tags WHERE language_id=%s"
-    params = language_id
+    # need to get all tags for language, and what tags this word currently has
+    query = "SELECT tags.tag_id, tags.tag, IF(word_tag.word_id=%s, 1, 0) AS taggedAs FROM tags LEFT JOIN word_tag ON tags.tag_id=word_tag.tag_id WHERE tags.language_id=%s"
+    params = word_id, language_id
     cursor.execute(query, params)
     tags = cursor.fetchall()
     return render_template('word.html', language_id=language_id, word_data=word_data, tags=tags)
@@ -163,6 +163,31 @@ def deleteTag():
     else:
         return json.dumps({'html':'An error has occurred (/deleteTag)'})
 
+@app.route('/addWordTag', methods=['POST'])
+def addWordTag():
+    _word_id = request.form['word_id']
+    _tag_id = request.form['tag_id']
+    if _word_id and _tag_id:
+        query = "INSERT INTO word_tag(word_id, tag_id) VALUES (%s, %s)"
+        params = _word_id, _tag_id
+        cursor.execute(query, params)
+        conn.commit()
+        return json.dumps({'html':'Tag added.'})
+    else:
+        return json.dumps({'html':'An error has occurred (/addWordTag)'})
+
+@app.route('/removeWordTag', methods=['POST'])
+def removeWordTag():
+    _word_id = request.form['word_id']
+    _tag_id = request.form['tag_id']
+    if _word_id and _tag_id:
+        query = "DELETE FROM word_tag WHERE word_id=%s AND tag_id=%s"
+        params = _word_id, _tag_id
+        cursor.execute(query, params)
+        conn.commit()
+        return json.dumps({'html':'Tag deleted.'})
+    else:
+        return json.dumps({'html':'An error has occurred (/removeWordTag)'})
 ###################### END ROUTES ######################
 
 if __name__ == "__main__":

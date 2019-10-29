@@ -8,6 +8,14 @@
 	</div>
 	<br>
 	<div class="container">
+		<h6>Tagged As:</h6>
+		<ul>
+			{% for t in tags %}
+			{% if t.taggedAs %}<li>{{ t.tag }}</li>{% endif %}
+			{% endfor %}
+		</ul>	
+	</div>
+	<div class="container">
 		<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('words', language_id=language_id) }}'">Return to Dictionary</button>
 		<button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#editWordModal">Edit Word</button>
 		<button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#editTagsModal">Edit Tags</button>
@@ -57,7 +65,7 @@
 						<form>
 							{% for t in tags %}
 							<div class="form-check">
-  								<input class="form-check-input" type="checkbox" value="{{ t.tag_id }}" name="tag-{{ t.tag_id }}">
+  								<input class="form-check-input" type="checkbox" value="{{ t.tag_id }}" name="tag-{{ t.tag_id }}" {% if t.taggedAs %}checked{% endif %}>
   								<label class="form-check-label" for="tag-{{ t.tag_id }}">{{ t.tag }}</label>
 							</div>
 							{% endfor %}
@@ -78,6 +86,10 @@
                         	location.reload();
                 	})
 
+			$('#editTagsModal').on('hidden.bs.modal', function () {
+                                location.reload();
+                        })
+
 			/* Submit changes */
 
                         $('#editWordButton').click(function() {
@@ -94,6 +106,38 @@
                                         }
                                 });
                         });
+
+			/* Handle checkboxes */
+
+			$(':checkbox').change(function() {
+  				if ($(this).is(':checked')) {
+					$.ajax({
+                                        	url: '/addWordTag',
+                                        	data: { word_id: '{{ word_data.word_id }}', tag_id: $(this).val() },
+                                        	type: 'POST',
+                                        	dataType: 'json',
+                                        	success: function(response) {
+                                                	console.log(response.html);
+                                        	},
+                                        	error: function(error) {
+                                                	console.log(error);
+                                        	}
+                                	});
+  				} else {
+					$.ajax({
+                                                url: '/removeWordTag',
+                                                data: { word_id: '{{ word_data.word_id }}', tag_id: $(this).val() },
+                                                type: 'POST',
+                                                dataType: 'json',
+                                                success: function(response) {
+                                                        console.log(response.html);
+                                                },
+                                                error: function(error) {
+                                                        console.log(error);
+                                                }
+                                        });
+  				}
+			});
                 });
         </script>
 
