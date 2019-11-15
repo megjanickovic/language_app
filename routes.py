@@ -80,7 +80,8 @@ def word(language_id, word_id):
     cursor.execute(query, params)
     word_data = cursor.fetchone()
     # need to get all tags for language, and what tags this word currently has
-    query = "SELECT tags.tag_id, tags.tag, IF(word_tag.word_id=%s, 1, 0) AS taggedAs FROM tags LEFT JOIN word_tag ON tags.tag_id=word_tag.tag_id WHERE tags.language_id=%s"
+    query = "SELECT DISTINCT tags.tag_id, tags.tag, IF(word_tag.word_id=%s, 1, 0) AS taggedAs FROM tags "
+    query += "LEFT JOIN word_tag ON tags.tag_id=word_tag.tag_id WHERE tags.language_id=%s"
     params = word_id, language_id
     cursor.execute(query, params)
     tags = cursor.fetchall()
@@ -191,14 +192,30 @@ def removeWordTag():
 
 ###################### FLASHCARDS ######################
 
-@app.route('/languages/<int:language_id>/flashcards')
-def flashcards(language_id):
-    query = "SELECT word_id, word, pronunciation, definition FROM words WHERE language_id=%s ORDER BY word"
-    params = language_id
+@app.route('/getFlashcards', methods=['POST'])
+def getFlashcards():
+    _language_id = request.form['language_id']
+    _tags = request.form.getlist('tags[]')
+    if _tags:
+        query = "SELECT words.word_id, words.word, words.pronunciation, words.definition FROM words "
+        query += "INNER JOIN word_tag ON words.word_id=word_tag.word_id WHERE language_id=%s AND word_tag.tag_id IN %s ORDER BY word"
+        params = _language_id, _tags
+    else:
+        query = "SELECT word_id, word, pronunciation, definition FROM words WHERE language_id=%s ORDER BY word"
+        params = _language_id
     cursor.execute(query, params)
     words_data = cursor.fetchall()
-    return render_template('flashcards.html', language_id=language_id, words_data=words_data)
-    
+    return json.dumps(words_data)
+
+@app.route('/languages/<int:language_id>/flashcards')
+def flashcards(language_id):
+    # get the list of tags for this language so they can pick which ones to study
+    query = "SELECT tag_id, tag FROM tags WHERE language_id=%s ORDER BY tag"
+    params = language_id
+    cursor.execute(query, params)
+    tags = cursor.fetchall()
+    return render_template('flashcards.html', language_id=language_id, tags=tags)
+
 ###################### END ROUTES ######################
 
 if __name__ == "__main__":

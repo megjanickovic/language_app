@@ -89,7 +89,7 @@
 
 			$('#deleteLanguageModal').on('show.bs.modal', function (event) {
                                 var button = $(event.relatedTarget);
-                                var language_id = button.data('language_id');
+                                var language_id = button.data('id');
                                 var language = button.data('language');
                                 $('#deleteLanguageHiddenId').val(language_id);
                                 $('#deleteLanguageName').text(language);

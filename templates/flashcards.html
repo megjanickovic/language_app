@@ -25,22 +25,54 @@
 		<br>
 		<div class="container">
 			<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('languages') }}'">Return to Languages</button>		
-			<button type="button" class="btn btn-outline-primary" onclick="alert('Coming coon!')">Select Tags</button>
+			<button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#selectTagsModal">Select Tags</button>
 			<button type="button" class="btn btn-outline-primary" id="restart">Restart</button>
 		</div>
 	</div>
 	<div class="container" id="body-no-cards">
 		<p>No flashcards found!</p>
 		<button type="button" class="btn btn-outline-primary" onclick="window.location.href='{{ url_for('languages') }}'">Return to Languages</button>
-		<button type="button" class="btn btn-outline-primary">Select Tags</button>
+		<button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#selectTagsModal">Select Tags</button>
 	</div>
+
+	<!-- MODALS -->
 		
+	<div class="modal fade" id="selectTagsModal" tabindex="-1" role="dialog" aria-labelledby="selectTagsModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                                <div class="modal-header">
+                                        <h5 class="modal-title" id="selectTagsModalLabel">Select Tags</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                        </button>
+                                </div>
+                                <div class="modal-body" id="selectTagsModalBody">
+                                        <div class="container">
+                                                <form>
+                                                        {% for t in tags %}
+                                                        <div class="form-check" id="tag-checks">
+                                                                <input class="form-check-input" type="checkbox" value="{{ t.tag_id }}" name="tag-{{ t.tag_id }}">
+                                                                <label class="form-check-label" for="tag-{{ t.tag_id }}">{{ t.tag }}</label>
+                                                        </div>
+                                                        {% endfor %}
+							<br>
+							<button type="button" class="btn btn-outline-primary" id="submit-tags">Submit</button>
+                                                </form>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+        </div>
+
+	<!-- END MODALS -->
 
 	<script>
                 $(function() {
-			var cards = {{ words_data|tojson }};
-			var numCards = cards.length;	
-			var currentCard = 0;
+			/* Setup Flashcards */
+
+			var cards = [];
+			var numCards = 0;   
+                        var currentCard = 0;
 
 			function handleEmptySet() {
 				if (numCards == 0) {
@@ -62,6 +94,8 @@
 				$('#flashcard-back').html(cards[currentCard].definition);
 			}
 
+			/* Flashcard Controls */
+
 			function showFront() {
 				$("#flashcard-back").hide();
                                 $("#flashcard-front").show();
@@ -78,11 +112,28 @@
 				setCardContent();
 			}
 
-			function setup() {
+			/* Need to get words with ajax and then set up cards */
+
+			function setup(c) {
+				cards = c;
+				numCards = cards.length;
+				currentCard = 0;
 				handleEmptySet();
-				changeCard();
+				if (numCards != 0 ) { changeCard(); }
 			}
-			setup();
+
+			$.ajax({
+                                url: '/getFlashcards',
+                                data: { language_id: '{{ language_id }}' },
+                                type: 'POST',
+                                dataType: 'json',
+                                success: function(response) {
+                                        setup(response);
+                                },
+                                error: function(error) {
+                                        console.log(error);
+                                }
+                        });	
 
 			$("#button-back").click(function() {
 				if (currentCard > 0) {
@@ -109,6 +160,28 @@
 			$("#restart").click(function() {
                                 currentCard = 0;
 				changeCard();
+                        });
+
+			/* Filtering by tag */
+
+                        $("#submit-tags").click(function() {
+                                let tags = []; 
+                                $('#tag-checks input:checked').each(function() {
+                                        tags.push(this.value);
+                                });
+                                $.ajax({
+                                        url: '/getFlashcards',
+                                        data: { language_id: '{{ language_id }}', tags: tags },
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        success: function(response) {
+						setup(response);	 
+						$('#selectTagsModal').modal('hide');
+                                        },
+                                        error: function(error) {
+                                                console.log(error);
+                                        }
+                                });
                         });
 		});
         </script>
